@@ -1,27 +1,86 @@
-import type { Equipo, TipoEquipo, Vehiculo } from './types';
-import type { Contrato } from './contratos';
-import { optimizarTransporte, generarFactura } from './optimizacion';
-import { agregarEquipoAContrato } from './contratos';
+import type { Equipo, Vehiculo } from "./types";
+import type { Contrato } from "./contratos";
+import { optimizarTransporte, generarFactura } from "./optimizacion";
+import { agregarEquipoAContrato } from "./contratos";
 
 // 1. BASES DE DATOS EN MEMORIA
 let equiposDisponibles: Equipo[] = [
-  { IdEquipo: '1', Nombre: 'Generador A', Tipo: 'Generador', PesoKg: 1200, VolumenM3: 3.5, PotenciaKW: 80, CostoAlquilerDiario: 100, Estado: 'Disponible' },
-  { IdEquipo: '2', Nombre: 'UPS B', Tipo: 'UPS', PesoKg: 500, VolumenM3: 1.2, PotenciaKW: 40, CostoAlquilerDiario: 50, Estado: 'Disponible' },
-  { IdEquipo: '3', Nombre: 'Transformador C', Tipo: 'Transformador', PesoKg: 900, VolumenM3: 2.8, PotenciaKW: 65, CostoAlquilerDiario: 80, Estado: 'Disponible' },
-  { IdEquipo: '4', Nombre: 'Banco Baterías D', Tipo: 'Banco de baterías', PesoKg: 400, VolumenM3: 1.0, PotenciaKW: 35, CostoAlquilerDiario: 40, Estado: 'Disponible' },
-  { IdEquipo: '5', Nombre: 'Generador E', Tipo: 'Generador', PesoKg: 700, VolumenM3: 2.0, PotenciaKW: 55, CostoAlquilerDiario: 70, Estado: 'Disponible' }
+  {
+    IdEquipo: "1",
+    Nombre: "Generador A",
+    Tipo: "Generador",
+    PesoKg: 1200,
+    VolumenM3: 3.5,
+    PotenciaKW: 80,
+    CostoAlquilerDiario: 100,
+    Estado: "Disponible",
+  },
+  {
+    IdEquipo: "2",
+    Nombre: "UPS B",
+    Tipo: "UPS",
+    PesoKg: 500,
+    VolumenM3: 1.2,
+    PotenciaKW: 40,
+    CostoAlquilerDiario: 50,
+    Estado: "Disponible",
+  },
+  {
+    IdEquipo: "3",
+    Nombre: "Transformador C",
+    Tipo: "Transformador",
+    PesoKg: 900,
+    VolumenM3: 2.8,
+    PotenciaKW: 65,
+    CostoAlquilerDiario: 80,
+    Estado: "Disponible",
+  },
+  {
+    IdEquipo: "4",
+    Nombre: "Banco Baterías D",
+    Tipo: "Banco de baterías",
+    PesoKg: 400,
+    VolumenM3: 1.0,
+    PotenciaKW: 35,
+    CostoAlquilerDiario: 40,
+    Estado: "Disponible",
+  },
+  {
+    IdEquipo: "5",
+    Nombre: "Generador E",
+    Tipo: "Generador",
+    PesoKg: 700,
+    VolumenM3: 2.0,
+    PotenciaKW: 55,
+    CostoAlquilerDiario: 70,
+    Estado: "Disponible",
+  },
 ];
 
 let vehiculosFlota: Vehiculo[] = [
-  { IdVehiculo: 'V1', Placa: 'CUA-1020', CapacidadMaximaKg: 2500, CapacidadVolumenM3: 6.0, TipoVehiculo: 'Camión', Estado: 'Disponible' },
-  { IdVehiculo: 'V2', Placa: 'CUB-9080', CapacidadMaximaKg: 5000, CapacidadVolumenM3: 12.0, TipoVehiculo: 'Plataforma', Estado: 'Disponible' }
+  {
+    IdVehiculo: "V1",
+    Placa: "CUA-1020",
+    CapacidadMaximaKg: 2500,
+    CapacidadVolumenM3: 6.0,
+    TipoVehiculo: "Camión",
+    Estado: "Disponible",
+  },
+  {
+    IdVehiculo: "V2",
+    Placa: "CUB-9080",
+    CapacidadMaximaKg: 5000,
+    CapacidadVolumenM3: 12.0,
+    TipoVehiculo: "Plataforma",
+    Estado: "Disponible",
+  },
 ];
 
 // Arreglo global para almacenar el historial de eventos
-let historialLogs: { hora: string, evento: string, color: string }[] = [];
+let historialLogs: { hora: string; evento: string; color: string }[] = [];
 
 // 2. INYECCIÓN DE LA INTERFAZ (Tema Claro)
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div style="font-family: Arial, sans-serif; padding: 20px; display: flex; flex-direction: column; gap: 20px; background-color: #f8fafc; color: #334155; min-height: 100vh;">
     
     <div style="display: flex; gap: 20px;">
@@ -33,7 +92,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
           <div style="display: flex; flex-direction: column; gap: 10px;">
             <input type="text" id="cliente" placeholder="Nombre Cliente" value="Empresa Industrial S.A." style="padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #1e293b;" />
             <select id="vehiculo-select" style="padding: 10px; border-radius: 4px; border: 1px solid #cbd5e1; background: #ffffff; color: #1e293b;">
-              ${vehiculosFlota.map(v => `<option value="${v.IdVehiculo}">${v.TipoVehiculo} - ${v.CapacidadMaximaKg}KG / ${v.CapacidadVolumenM3}m³</option>`).join('')}
+              ${vehiculosFlota.map((v) => `<option value="${v.IdVehiculo}">${v.TipoVehiculo} - ${v.CapacidadMaximaKg}KG / ${v.CapacidadVolumenM3}m³</option>`).join("")}
             </select>
             <button id="btn-crear-manual" style="padding: 12px; background: #10b981; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 5px; transition: background 0.2s;">
               Crear Contrato con Selección
@@ -91,32 +150,43 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 `;
 
 // Función para agregar logs al historial
-const registrarLog = (evento: string, tipo: 'info' | 'success' | 'warning' | 'error') => {
-  const colores = { info: '#0284c7', success: '#059669', warning: '#d97706', error: '#dc2626' };
+const registrarLog = (
+  evento: string,
+  tipo: "info" | "success" | "warning" | "error",
+) => {
+  const colores = {
+    info: "#0284c7",
+    success: "#059669",
+    warning: "#d97706",
+    error: "#dc2626",
+  };
   const hora = new Date().toLocaleTimeString();
   historialLogs.unshift({ hora, evento, color: colores[tipo] });
-  
-  const panel = document.getElementById('panel-historial')!;
-  panel.innerHTML = historialLogs.map(log => 
-    `<div style="border-bottom: 1px solid #e2e8f0; padding: 4px 0;">
+
+  const panel = document.getElementById("panel-historial")!;
+  panel.innerHTML = historialLogs
+    .map(
+      (log) =>
+        `<div style="border-bottom: 1px solid #e2e8f0; padding: 4px 0;">
       <span style="color: #94a3b8;">[${log.hora}]</span> 
       <span style="color: ${log.color}; font-weight: 500;">${log.evento}</span>
-    </div>`
-  ).join('');
+    </div>`,
+    )
+    .join("");
 };
 
 // 3. LÓGICA DE LISTADO CON CHECKBOXES
 const renderizarTabla = () => {
-  const tbody = document.getElementById('tabla-cuerpo')!;
-  tbody.innerHTML = '';
-  equiposDisponibles.forEach(eq => {
-    const isDisponible = eq.Estado === 'Disponible';
-    const colorEstado = isDisponible ? '#059669' : '#d97706';
-    
+  const tbody = document.getElementById("tabla-cuerpo")!;
+  tbody.innerHTML = "";
+  equiposDisponibles.forEach((eq) => {
+    const isDisponible = eq.Estado === "Disponible";
+    const colorEstado = isDisponible ? "#059669" : "#d97706";
+
     tbody.innerHTML += `
-      <tr style="border-bottom: 1px solid #e2e8f0; background: ${isDisponible ? 'transparent' : '#f8fafc'};">
+      <tr style="border-bottom: 1px solid #e2e8f0; background: ${isDisponible ? "transparent" : "#f8fafc"};">
         <td style="padding: 12px 0;">
-          <input type="checkbox" class="chk-equipo" value="${eq.IdEquipo}" ${!isDisponible ? 'disabled' : ''} style="cursor: pointer; width: 16px; height: 16px;" />
+          <input type="checkbox" class="chk-equipo" value="${eq.IdEquipo}" ${!isDisponible ? "disabled" : ""} style="cursor: pointer; width: 16px; height: 16px;" />
         </td>
         <td style="color: #1e293b; font-weight: 500;">${eq.Nombre}</td>
         <td style="color: #475569;">${eq.Tipo}</td>
@@ -130,107 +200,196 @@ const renderizarTabla = () => {
 };
 
 // 4. LÓGICA: CREACIÓN MANUAL DE CONTRATO (REQ03)
-document.getElementById('btn-crear-manual')!.addEventListener('click', () => {
-  const checkboxes = document.querySelectorAll('.chk-equipo:checked');
+document.getElementById("btn-crear-manual")!.addEventListener("click", () => {
+  const checkboxes = document.querySelectorAll(".chk-equipo:checked");
   if (checkboxes.length === 0) {
-    registrarLog("Intento fallido de creación manual: Ningún equipo seleccionado.", "warning");
-    alert("⚠️ Por favor, selecciona al menos un equipo disponible de la tabla.");
+    registrarLog(
+      "Intento fallido de creación manual: Ningún equipo seleccionado.",
+      "warning",
+    );
+    alert(
+      "⚠️ Por favor, selecciona al menos un equipo disponible de la tabla.",
+    );
     return;
   }
 
-  const idsSeleccionados = Array.from(checkboxes).map(chk => (chk as HTMLInputElement).value);
-  const equiposSeleccionados = equiposDisponibles.filter(eq => idsSeleccionados.includes(eq.IdEquipo));
-  const vehiculoSeleccionado = vehiculosFlota.find(v => v.IdVehiculo === (document.getElementById('vehiculo-select') as HTMLSelectElement).value)!;
-  const cliente = (document.getElementById('cliente') as HTMLInputElement).value;
+  const idsSeleccionados = Array.from(checkboxes).map(
+    (chk) => (chk as HTMLInputElement).value,
+  );
+  const equiposSeleccionados = equiposDisponibles.filter((eq) =>
+    idsSeleccionados.includes(eq.IdEquipo),
+  );
+  const vehiculoSeleccionado = vehiculosFlota.find(
+    (v) =>
+      v.IdVehiculo ===
+      (document.getElementById("vehiculo-select") as HTMLSelectElement).value,
+  )!;
+  const cliente = (document.getElementById("cliente") as HTMLInputElement)
+    .value;
 
-  const pesoTotal = equiposSeleccionados.reduce((sum, eq) => sum + eq.PesoKg, 0);
-  const volTotal = equiposSeleccionados.reduce((sum, eq) => sum + eq.VolumenM3, 0);
+  const pesoTotal = equiposSeleccionados.reduce(
+    (sum, eq) => sum + eq.PesoKg,
+    0,
+  );
+  const volTotal = equiposSeleccionados.reduce(
+    (sum, eq) => sum + eq.VolumenM3,
+    0,
+  );
 
-  if (pesoTotal > vehiculoSeleccionado.CapacidadMaximaKg || volTotal > vehiculoSeleccionado.CapacidadVolumenM3) {
-    registrarLog(`Error de capacidad: Selección manual excede límites del vehículo ${vehiculoSeleccionado.Placa}.`, "error");
-    alert(`❌ Los equipos exceden la capacidad del vehículo.\nPeso: ${pesoTotal} / ${vehiculoSeleccionado.CapacidadMaximaKg}kg\nVolumen: ${volTotal} / ${vehiculoSeleccionado.CapacidadVolumenM3}m³`);
+  if (
+    pesoTotal > vehiculoSeleccionado.CapacidadMaximaKg ||
+    volTotal > vehiculoSeleccionado.CapacidadVolumenM3
+  ) {
+    registrarLog(
+      `Error de capacidad: Selección manual excede límites del vehículo ${vehiculoSeleccionado.Placa}.`,
+      "error",
+    );
+    alert(
+      `❌ Los equipos exceden la capacidad del vehículo.\nPeso: ${pesoTotal} / ${vehiculoSeleccionado.CapacidadMaximaKg}kg\nVolumen: ${volTotal} / ${vehiculoSeleccionado.CapacidadVolumenM3}m³`,
+    );
     return;
   }
 
   const nuevoContrato: Contrato = {
     IdContrato: `CTR-${Math.floor(Math.random() * 1000)}`,
     Cliente: cliente,
-    UbicacionProyecto: 'Cuenca',
+    UbicacionProyecto: "Cuenca",
     FechaInicio: new Date(),
-    FechaFin: new Date(new Date().setDate(new Date().getDate() + 3)), 
-    Equipos: []
+    FechaFin: new Date(new Date().setDate(new Date().getDate() + 3)),
+    Equipos: [],
   };
 
-  equiposSeleccionados.forEach(eq => agregarEquipoAContrato(nuevoContrato, eq));
+  equiposSeleccionados.forEach((eq) =>
+    agregarEquipoAContrato(nuevoContrato, eq),
+  );
   renderizarTabla();
-  
-  registrarLog(`Contrato ${nuevoContrato.IdContrato} creado MANUALMENTE para ${cliente}. Equipos: ${equiposSeleccionados.length}`, "success");
+
+  registrarLog(
+    `Contrato ${nuevoContrato.IdContrato} creado MANUALMENTE para ${cliente}. Equipos: ${equiposSeleccionados.length}`,
+    "success",
+  );
 
   const factura = generarFactura(nuevoContrato, equiposSeleccionados, 3);
-  mostrarFacturaEnPanel(factura, cliente, vehiculoSeleccionado, "Manual", equiposSeleccionados);
-  registrarLog(`Factura ${factura.IdFactura} generada por un total de $${factura.TotalPagar}.`, "info");
+  mostrarFacturaEnPanel(
+    factura,
+    cliente,
+    vehiculoSeleccionado,
+    "Manual",
+    equiposSeleccionados,
+  );
+  registrarLog(
+    `Factura ${factura.IdFactura} generada por un total de $${factura.TotalPagar}.`,
+    "info",
+  );
 });
 
 // 5. LÓGICA: OPTIMIZACIÓN AUTOMÁTICA Y FACTURACIÓN (REQ04)
-document.getElementById('btn-optimizar')!.addEventListener('click', () => {
-  const vehiculoSeleccionado = vehiculosFlota.find(v => v.IdVehiculo === (document.getElementById('vehiculo-select') as HTMLSelectElement).value)!;
-  const cliente = (document.getElementById('cliente') as HTMLInputElement).value;
-  
-  const equiposValidos = equiposDisponibles.filter(eq => eq.Estado !== 'Alquilado' && eq.Estado !== 'Reservado');
+document.getElementById("btn-optimizar")!.addEventListener("click", () => {
+  const vehiculoSeleccionado = vehiculosFlota.find(
+    (v) =>
+      v.IdVehiculo ===
+      (document.getElementById("vehiculo-select") as HTMLSelectElement).value,
+  )!;
+  const cliente = (document.getElementById("cliente") as HTMLInputElement)
+    .value;
 
-  if(equiposValidos.length === 0) {
-      registrarLog("Intento de optimización fallido: No hay equipos disponibles en el catálogo.", "warning");
-      alert("No hay equipos disponibles para optimizar.");
-      return;
+  const equiposValidos = equiposDisponibles.filter(
+    (eq) => eq.Estado !== "Alquilado" && eq.Estado !== "Reservado",
+  );
+
+  if (equiposValidos.length === 0) {
+    registrarLog(
+      "Intento de optimización fallido: No hay equipos disponibles en el catálogo.",
+      "warning",
+    );
+    alert("No hay equipos disponibles para optimizar.");
+    return;
   }
 
-  registrarLog(`Iniciando Algoritmo de Optimización (Mochila) para vehículo ${vehiculoSeleccionado.Placa}...`, "info");
-  const optimizados = optimizarTransporte(equiposValidos, vehiculoSeleccionado.CapacidadMaximaKg, vehiculoSeleccionado.CapacidadVolumenM3);
-  
+  registrarLog(
+    `Iniciando Algoritmo de Optimización (Mochila) para vehículo ${vehiculoSeleccionado.Placa}...`,
+    "info",
+  );
+  const optimizados = optimizarTransporte(
+    equiposValidos,
+    vehiculoSeleccionado.CapacidadMaximaKg,
+    vehiculoSeleccionado.CapacidadVolumenM3,
+  );
+
   if (optimizados.length === 0) {
-      registrarLog("El algoritmo no encontró ninguna combinación que quepa en el vehículo.", "warning");
-      alert("Ningún equipo cabe en el vehículo seleccionado.");
-      return;
+    registrarLog(
+      "El algoritmo no encontró ninguna combinación que quepa en el vehículo.",
+      "warning",
+    );
+    alert("Ningún equipo cabe en el vehículo seleccionado.");
+    return;
   }
 
   const nuevoContrato: Contrato = {
     IdContrato: `CTR-${Math.floor(Math.random() * 1000)}`,
     Cliente: cliente,
-    UbicacionProyecto: 'Cuenca',
+    UbicacionProyecto: "Cuenca",
     FechaInicio: new Date(),
     FechaFin: new Date(new Date().setDate(new Date().getDate() + 3)),
-    Equipos: []
+    Equipos: [],
   };
 
-  optimizados.forEach(eq => agregarEquipoAContrato(nuevoContrato, eq));
-  renderizarTabla(); 
+  optimizados.forEach((eq) => agregarEquipoAContrato(nuevoContrato, eq));
+  renderizarTabla();
 
-  registrarLog(`Contrato ${nuevoContrato.IdContrato} creado vía ALGORITMO para ${cliente}. Potencia Maximizada: ${optimizados.reduce((a,b)=>a+b.PotenciaKW,0)}KW.`, "success");
+  registrarLog(
+    `Contrato ${nuevoContrato.IdContrato} creado vía ALGORITMO para ${cliente}. Potencia Maximizada: ${optimizados.reduce((a, b) => a + b.PotenciaKW, 0)}KW.`,
+    "success",
+  );
 
   const factura = generarFactura(nuevoContrato, optimizados, 3);
-  mostrarFacturaEnPanel(factura, cliente, vehiculoSeleccionado, "Optimizada (Knapsack)", optimizados);
-  registrarLog(`Factura ${factura.IdFactura} generada por un total de $${factura.TotalPagar}.`, "info");
+  mostrarFacturaEnPanel(
+    factura,
+    cliente,
+    vehiculoSeleccionado,
+    "Optimizada (Knapsack)",
+    optimizados,
+  );
+  registrarLog(
+    `Factura ${factura.IdFactura} generada por un total de $${factura.TotalPagar}.`,
+    "info",
+  );
 });
 
 // 6. FUNCIÓN MEJORADA: TARJETA DE CARGA + FACTURA (Tema Claro)
-function mostrarFacturaEnPanel(factura: any, cliente: string, vehiculo: Vehiculo, tipo: string, equipos: Equipo[]) {
-  
+function mostrarFacturaEnPanel(
+  factura: any,
+  cliente: string,
+  vehiculo: Vehiculo,
+  tipo: string,
+  equipos: Equipo[],
+) {
   const pesoTotal = equipos.reduce((sum, eq) => sum + eq.PesoKg, 0);
   const volTotal = equipos.reduce((sum, eq) => sum + eq.VolumenM3, 0);
-  
-  const pctPeso = Math.min((pesoTotal / vehiculo.CapacidadMaximaKg) * 100, 100).toFixed(1);
-  const pctVol = Math.min((volTotal / vehiculo.CapacidadVolumenM3) * 100, 100).toFixed(1);
 
-  const detalleEquiposHTML = equipos.map(eq => `
+  const pctPeso = Math.min(
+    (pesoTotal / vehiculo.CapacidadMaximaKg) * 100,
+    100,
+  ).toFixed(1);
+  const pctVol = Math.min(
+    (volTotal / vehiculo.CapacidadVolumenM3) * 100,
+    100,
+  ).toFixed(1);
+
+  const detalleEquiposHTML = equipos
+    .map(
+      (eq) => `
     <div style="display: flex; justify-content: space-between; border-bottom: 1px dotted #cbd5e1; padding: 6px 0; font-size: 0.9em; color: #475569;">
       <span>- ${eq.Nombre} <span style="font-size: 0.8em; color: #94a3b8;">(${eq.Tipo})</span></span>
       <span style="font-weight: 500;">${eq.PotenciaKW} KW | $${eq.CostoAlquilerDiario}/día</span>
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
 
-  const colorTipo = tipo === 'Manual' ? '#059669' : '#0284c7';
+  const colorTipo = tipo === "Manual" ? "#059669" : "#0284c7";
 
-  document.getElementById('panel-resultados')!.innerHTML = `
+  document.getElementById("panel-resultados")!.innerHTML = `
     <div style="background: #ffffff; border: 1px solid #93c5fd; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
       <h4 style="color: #2563eb; margin-top: 0; margin-bottom: 15px;">🚛 Características del Vehículo Cargado</h4>
       <div style="display: flex; gap: 15px; justify-content: space-between;">
@@ -293,5 +452,8 @@ function mostrarFacturaEnPanel(factura: any, cliente: string, vehiculo: Vehiculo
 }
 
 // Arranque inicial
-registrarLog("Sistema de facturación y control de inventario inicializado.", "info");
+registrarLog(
+  "Sistema de facturación y control de inventario inicializado.",
+  "info",
+);
 renderizarTabla();
